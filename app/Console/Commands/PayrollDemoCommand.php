@@ -34,7 +34,8 @@ final class PayrollDemoCommand extends Command
         $id = EarningLineId::generate();
         $rows = [];
 
-        foreach ($this->steps($id) as $step => [$event, $command, $note]) {
+        foreach ($this->steps($id) as $index => [$event, $command, $note]) {
+            $step = $index + 1;
             $bus->dispatch($command);
 
             $current = $history(new GetLineHistory($id))->currentValue;
@@ -57,19 +58,21 @@ final class PayrollDemoCommand extends Command
         return self::SUCCESS;
     }
 
-    /** @return iterable<int, array{string, object, string}> step => [event, command, comment-column note] */
-    private function steps(EarningLineId $id): iterable
+    /** @return list<array{string, object, string}> [event, command, comment-column note] in step order */
+    private function steps(EarningLineId $id): array
     {
         $usd = static fn (string $amount): Money => Money::fromDecimal($amount, Currency::USD);
         $adjust = static fn (string $amount, string $comment): AdjustLine => new AdjustLine($id, $usd($amount), new Comment($comment));
 
-        yield 1 => ['System calculates the line', new CalculateLine($id, $usd('1,000.00')), '—'];
-        yield 2 => ['Source data changes, system recalculates (no manual correction yet, so this is allowed)', new RecalculateLine($id, $usd('1,050.00')), '—'];
-        yield 3 => ['Specialist adds a manual correction', $adjust('-45.55', 'Employee declined dental benefit; reversing deduction'), ''];
-        yield 4 => ['Source data changes again, system attempts to recalculate', new RecalculateLine($id, $usd('1,200.00')), '(must be ignored — line already has a manual correction)'];
-        yield 5 => ['Specialist adds a second correction', $adjust('+100.10', 'Late correction: missed approved overtime bonus'), ''];
-        yield 6 => ['Specialist adds a third correction', $adjust('-0.10', 'Minor rounding adjustment'), ''];
-        yield 7 => ['Specialist adds a fourth correction', $adjust('-0.20', 'Second minor rounding adjustment'), ''];
-        yield 8 => ['Specialist adds a compensating correction, realizing step 7 was a mistake', $adjust('+0.20', 'Correcting mistake in adjustment #4'), ''];
+        return [
+            ['System calculates the line', new CalculateLine($id, $usd('1,000.00')), '—'],
+            ['Source data changes, system recalculates (no manual correction yet, so this is allowed)', new RecalculateLine($id, $usd('1,050.00')), '—'],
+            ['Specialist adds a manual correction', $adjust('-45.55', 'Employee declined dental benefit; reversing deduction'), ''],
+            ['Source data changes again, system attempts to recalculate', new RecalculateLine($id, $usd('1,200.00')), '(must be ignored — line already has a manual correction)'],
+            ['Specialist adds a second correction', $adjust('+100.10', 'Late correction: missed approved overtime bonus'), ''],
+            ['Specialist adds a third correction', $adjust('-0.10', 'Minor rounding adjustment'), ''],
+            ['Specialist adds a fourth correction', $adjust('-0.20', 'Second minor rounding adjustment'), ''],
+            ['Specialist adds a compensating correction, realizing step 7 was a mistake', $adjust('+0.20', 'Correcting mistake in adjustment #4'), ''],
+        ];
     }
 }

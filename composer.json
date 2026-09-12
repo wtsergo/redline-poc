@@ -3,7 +3,13 @@
     "name": "wtsergo/redline-poc",
     "type": "project",
     "description": "Append-only manual adjustments to payroll earning lines — Laravel code assignment (proof of concept)",
-    "keywords": ["payroll", "event-sourcing", "ddd", "cqrs", "laravel"],
+    "keywords": [
+        "payroll",
+        "event-sourcing",
+        "ddd",
+        "cqrs",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.4",
@@ -37,8 +43,11 @@
             "@php artisan migrate --force --ansi"
         ],
         "test": "phpunit",
-        "test:coverage": "@php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text --coverage-clover=build/coverage/clover.xml",
-        "infection": "infection --threads=max",
+        "test:coverage": [
+            "@php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text --coverage-clover=build/coverage/clover.xml",
+            "@php scripts/coverage-gate.php build/coverage/clover.xml"
+        ],
+        "infection": "infection --threads=max --show-mutations",
         "stan": "phpstan analyse --memory-limit=1G",
         "lint": "pint --test",
         "lint:fix": "pint",

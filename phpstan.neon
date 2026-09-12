@@ -6,5 +6,6 @@ parameters:
     paths:
         - app
         - database
+        - scripts
         - tests
     tmpDir: build/phpstan

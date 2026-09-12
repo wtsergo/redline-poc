@@ -6,7 +6,6 @@ namespace App\Payroll\Infrastructure\Persistence;
 
 use App\Payroll\Application\EventStore;
 use App\Payroll\Domain\EarningLineId;
-use App\Payroll\Domain\Event\DomainEvent;
 use App\Payroll\Domain\Exception\ConcurrencyConflict;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -51,9 +50,12 @@ final readonly class DatabaseEventStore implements EventStore
             ->orderBy('version')
             ->get(['aggregate_id', 'event_type', 'payload', 'recorded_at']);
 
-        return array_values(array_map(
-            fn (object $row): DomainEvent => $this->serializer->fromRow(get_object_vars($row)),
-            $rows->all(),
-        ));
+        $events = [];
+
+        foreach ($rows as $row) {
+            $events[] = $this->serializer->fromRow(get_object_vars($row));
+        }
+
+        return $events;
     }
 }

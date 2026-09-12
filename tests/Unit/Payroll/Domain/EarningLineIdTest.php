@@ -15,13 +15,19 @@ final class EarningLineIdTest extends TestCase
     #[Test]
     public function it_generates_random_version_4_uuids(): void
     {
-        $id = EarningLineId::generate();
+        $ids = [];
 
-        self::assertMatchesRegularExpression(
-            '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/',
-            $id->toString(),
-        );
-        self::assertFalse($id->equals(EarningLineId::generate()));
+        for ($i = 0; $i < 200; $i++) {
+            $id = EarningLineId::generate();
+
+            self::assertMatchesRegularExpression(
+                '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/',
+                $id->toString(),
+            );
+            $ids[$id->toString()] = true;
+        }
+
+        self::assertCount(200, $ids, 'ids are unique');
     }
 
     #[Test]

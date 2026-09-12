@@ -16,11 +16,11 @@ final readonly class EarningLineId
     /** A random (version 4) UUID, generated without any framework helper. */
     public static function generate(): self
     {
-        $bytes = random_bytes(16);
-        $bytes[6] = chr((ord($bytes[6]) & 0x0F) | 0x40); // version 4
-        $bytes[8] = chr((ord($bytes[8]) & 0x3F) | 0x80); // RFC 4122 variant
+        $hex = bin2hex(random_bytes(16));
+        $hex[12] = '4';                       // version nibble
+        $hex[16] = '89ab'[random_int(0, 3)];  // RFC 4122 variant nibble
 
-        return new self(vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4)));
+        return new self(vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split($hex, 4)));
     }
 
     /** @throws InvalidEarningLineId */

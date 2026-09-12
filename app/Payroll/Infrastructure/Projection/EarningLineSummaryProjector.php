@@ -20,25 +20,12 @@ final readonly class EarningLineSummaryProjector implements Projector
 {
     public function project(DomainEvent $event, int $version): void
     {
-        if ($event instanceof LineCalculated) {
-            EarningLineSummary::query()->firstOrCreate(['id' => $event->lineId->toString()], [
-                'currency' => $event->value->currency->value,
-                'system_value_minor' => $event->value->minorUnits,
-                'current_value_minor' => $event->value->minorUnits,
-                'adjustment_count' => 0,
-                'frozen_at_version' => null,
-                'version' => $version,
-                'calculated_at' => $event->recordedAt,
-                'last_event_at' => $event->recordedAt,
-            ]);
-
-            return;
-        }
-
-        $summary = EarningLineSummary::query()->findOrFail($event->lineId->toString());
+        $summary = $event instanceof LineCalculated
+            ? $this->created($event, $version)
+            : EarningLineSummary::query()->findOrFail($event->lineId->toString());
 
         if ($summary->version >= $version) {
-            return; // already applied
+            return; // already applied — including the row that was just created
         }
 
         match (true) {
@@ -51,6 +38,20 @@ final readonly class EarningLineSummaryProjector implements Projector
         $summary->version = $version;
         $summary->last_event_at = $event->recordedAt;
         $summary->save();
+    }
+
+    private function created(LineCalculated $event, int $version): EarningLineSummary
+    {
+        return EarningLineSummary::query()->firstOrCreate(['id' => $event->lineId->toString()], [
+            'currency' => $event->value->currency->value,
+            'system_value_minor' => $event->value->minorUnits,
+            'current_value_minor' => $event->value->minorUnits,
+            'adjustment_count' => 0,
+            'frozen_at_version' => null,
+            'version' => $version,
+            'calculated_at' => $event->recordedAt,
+            'last_event_at' => $event->recordedAt,
+        ]);
     }
 
     private function recalculated(EarningLineSummary $summary, LineRecalculated $event): void

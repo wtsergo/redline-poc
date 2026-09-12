@@ -46,6 +46,7 @@ final class PayrollCalculateCommandTest extends TestCase
 
         $this->artisan('payroll:calculate', ['amount' => '1,200.00', '--line' => $id])
             ->expectsOutput("Recalculation to $1,200.00 ignored: line $id has manual adjustments (frozen at step 2). Current value stays $954.45.")
+            ->doesntExpectOutputToContain('Recalculated earning line')
             ->assertSuccessful();
     }
 

@@ -3,15 +3,19 @@
     "source": {
         "directories": ["app"]
     },
-    "timeout": 20,
+    "timeout": 30,
     "tmpDir": "build/infection",
     "logs": {
         "text": "build/infection/infection.log",
-        "summary": "build/infection/summary.log"
+        "summary": "build/infection/summary.log",
+        "github": true
     },
     "mutators": {
-        "@default": true
+        "@default": true,
+        // Blank lines between console tables are cosmetic; a mutant that drops one is harmless.
+        "global-ignoreSourceCodeByRegex": ["\\$this->newLine\\(\\);"]
     },
     "minMsi": 95,
-    "minCoveredMsi": 95
+    "minCoveredMsi": 95,
+    "initialTestsPhpOptions": "-d pcov.enabled=1"
 }

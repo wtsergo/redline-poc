@@ -110,24 +110,27 @@ final class EventSerializerTest extends TestCase
     /** @return iterable<string, array{array<string, mixed>, class-string<\Throwable>, string}> */
     public static function corruptRows(): iterable
     {
-        /**
-         * @param  array<string, mixed>  $overrides
-         * @return array<string, mixed>
-         */
-        $row = static fn (array $overrides): array => array_merge([
+        yield 'unknown type' => [self::row(['event_type' => 'line_deleted']), UnexpectedValueException::class, 'Unknown stored event type "line_deleted"'];
+        yield 'type is not a string' => [self::row(['event_type' => 7]), UnexpectedValueException::class, '"event_type" must be a string'];
+        yield 'missing timestamp' => [self::row(['recorded_at' => null]), UnexpectedValueException::class, '"recorded_at" must be a string'];
+        yield 'payload is not json' => [self::row(['payload' => '{oops']), JsonException::class, 'Syntax error'];
+        yield 'payload is not an object' => [self::row(['payload' => '42']), UnexpectedValueException::class, 'must decode to an object'];
+        yield 'amount is a decimal string' => [self::row(['payload' => '{"amount_minor":"-45.55","currency":"USD","number":1,"comment":"x"}']), UnexpectedValueException::class, '"amount_minor" must be an integer'];
+        yield 'comment missing' => [self::row(['payload' => '{"amount_minor":-4555,"currency":"USD","number":1}']), UnexpectedValueException::class, '"comment" must be a string'];
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private static function row(array $overrides): array
+    {
+        return array_merge([
             'aggregate_id' => self::LINE_ID,
             'event_type' => 'line_adjusted',
             'payload' => '{"amount_minor":-4555,"currency":"USD","number":1,"comment":"dental"}',
             'recorded_at' => '2026-09-12 09:00:00.000000',
         ], $overrides);
-
-        yield 'unknown type' => [$row(['event_type' => 'line_deleted']), UnexpectedValueException::class, 'Unknown stored event type "line_deleted"'];
-        yield 'type is not a string' => [$row(['event_type' => 7]), UnexpectedValueException::class, '"event_type" must be a string'];
-        yield 'missing timestamp' => [$row(['recorded_at' => null]), UnexpectedValueException::class, '"recorded_at" must be a string'];
-        yield 'payload is not json' => [$row(['payload' => '{oops']), JsonException::class, 'Syntax error'];
-        yield 'payload is not an object' => [$row(['payload' => '42']), UnexpectedValueException::class, 'must decode to an object'];
-        yield 'amount is a decimal string' => [$row(['payload' => '{"amount_minor":"-45.55","currency":"USD","number":1,"comment":"x"}']), UnexpectedValueException::class, '"amount_minor" must be an integer'];
-        yield 'comment missing' => [$row(['payload' => '{"amount_minor":-4555,"currency":"USD","number":1}']), UnexpectedValueException::class, '"comment" must be a string'];
     }
 
     private function id(): EarningLineId

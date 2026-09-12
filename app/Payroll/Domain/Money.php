@@ -61,8 +61,8 @@ final readonly class Money
             throw InvalidMoneyAmount::tooLarge($amount);
         }
 
-        $fraction = str_pad($matches['fraction'] ?? '', 2, '0');
-        $minorUnits = (int) $whole * self::MINOR_UNITS_PER_MAJOR + (int) $fraction;
+        // Whole units followed by exactly two fraction digits are the minor units, e.g. "1050" . "00".
+        $minorUnits = (int) ($whole.str_pad($matches['fraction'] ?? '', 2, '0'));
         $negative = $matches['sign'] === '-' || $matches['sign'] === self::MINUS;
 
         return new self($negative ? -$minorUnits : $minorUnits, $currency);
@@ -122,7 +122,7 @@ final readonly class Money
 
     private function formatUnsigned(): string
     {
-        $absolute = $this->minorUnits < 0 ? -$this->minorUnits : $this->minorUnits;
+        $absolute = abs($this->minorUnits);
         $whole = (string) intdiv($absolute, self::MINOR_UNITS_PER_MAJOR);
         // Group thousands on the string so very large integers keep their exact digits.
         $grouped = strrev(implode(',', str_split(strrev($whole), 3)));

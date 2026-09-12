@@ -21,6 +21,7 @@ final class PayrollLinesCommandTest extends TestCase
     {
         $this->artisan('payroll:lines')
             ->expectsOutput('No earning lines yet. Run payroll:demo or payroll:calculate to create one.')
+            ->doesntExpectOutputToContain('System value')
             ->assertSuccessful();
     }
 

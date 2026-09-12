@@ -27,11 +27,6 @@ final readonly class EventSourcedEarningLineRepository implements EarningLineRep
     public function save(EarningLine $line): void
     {
         $events = $line->releaseEvents();
-
-        if ($events === []) {
-            return;
-        }
-
         $version = $line->version() - count($events);
         $this->eventStore->append($line->id(), $version, $events);
 
