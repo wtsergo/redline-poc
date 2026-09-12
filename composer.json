@@ -1,0 +1,82 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "wtsergo/redline-poc",
+    "type": "project",
+    "description": "Append-only manual adjustments to payroll earning lines — Laravel code assignment (proof of concept)",
+    "keywords": ["payroll", "event-sourcing", "ddd", "cqrs", "laravel"],
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.17"
+    },
+    "require-dev": {
+        "infection/infection": "^0.35",
+        "larastan/larastan": "^3.12",
+        "laravel/pint": "^1.27",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^12.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "setup": [
+            "composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --force --ansi"
+        ],
+        "test": "phpunit",
+        "test:coverage": "@php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text --coverage-clover=build/coverage/clover.xml",
+        "infection": "infection --threads=max",
+        "stan": "phpstan analyse --memory-limit=1G",
+        "lint": "pint --test",
+        "lint:fix": "pint",
+        "check": [
+            "@lint",
+            "@stan",
+            "@test:coverage",
+            "@infection"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ]
+    },
+    "scripts-descriptions": {
+        "setup": "Install dependencies, create .env and the SQLite database, run migrations",
+        "test": "Run the PHPUnit suites",
+        "test:coverage": "Run PHPUnit with pcov coverage (text + clover)",
+        "infection": "Run mutation testing",
+        "stan": "Run Larastan static analysis",
+        "lint": "Check code style with Pint",
+        "lint:fix": "Fix code style with Pint",
+        "check": "Run every quality gate: lint, stan, tests + coverage, mutation"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "infection/extension-installer": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
