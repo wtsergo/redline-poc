@@ -22,7 +22,7 @@ jobs:
       - run: composer lint
 
   stan:
-    name: Larastan
+    name: Larastan (level max)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -34,7 +34,7 @@ jobs:
       - run: composer stan
 
   test:
-    name: PHPUnit (SQLite, coverage)
+    name: PHPUnit (SQLite) + 100% coverage gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -44,3 +44,54 @@ jobs:
           coverage: pcov
       - uses: ramsey/composer-install@v3
       - run: composer test:coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: clover
+          path: build/coverage/clover.xml
+
+  test-mysql:
+    name: PHPUnit (MySQL 8.4)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: redline_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: redline_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: composer test -- --testsuite=Integration,Feature
+
+  infection:
+    name: Infection (MSI ≥ 95%)
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: pcov
+      - uses: ramsey/composer-install@v3
+      - run: composer infection
