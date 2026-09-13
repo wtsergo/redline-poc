@@ -7,7 +7,6 @@ namespace App\Payroll\Infrastructure\Projection;
 use App\Payroll\Domain\Currency;
 use App\Payroll\Domain\Money;
 use Carbon\CarbonImmutable;
-use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -22,10 +21,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $adjustment_count
  * @property int|null $frozen_at_version
  * @property int $version
- * @property-read CarbonImmutable $calculated_at
- * @property-write DateTimeInterface $calculated_at
- * @property-read CarbonImmutable $last_event_at
- * @property-write DateTimeInterface $last_event_at
+ * @property CarbonImmutable $calculated_at
+ * @property CarbonImmutable $last_event_at
  */
 final class EarningLineSummary extends Model
 {

@@ -10,6 +10,7 @@ use App\Payroll\Domain\Event\LineAdjusted;
 use App\Payroll\Domain\Event\LineCalculated;
 use App\Payroll\Domain\Event\LineRecalculated;
 use App\Payroll\Domain\Event\RecalculationIgnored;
+use Carbon\CarbonImmutable;
 use LogicException;
 
 /**
@@ -36,7 +37,7 @@ final readonly class EarningLineSummaryProjector implements Projector
         };
 
         $summary->version = $version;
-        $summary->last_event_at = $event->recordedAt;
+        $summary->last_event_at = CarbonImmutable::instance($event->recordedAt);
         $summary->save();
     }
 
