@@ -102,7 +102,7 @@ final class EarningLine
             throw ZeroAdjustment::create();
         }
 
-        $this->record(new LineAdjusted($this->id, count($this->adjustments) + 1, $amount, $comment, $at));
+        $this->record(new LineAdjusted($this->id, $amount, $comment, $at));
     }
 
     public function id(): EarningLineId
@@ -183,7 +183,7 @@ final class EarningLine
     private function applyAdjusted(LineAdjusted $event): void
     {
         $this->frozenAtVersion ??= $this->version;
-        $this->adjustments[] = new Adjustment($event->number, $event->amount, $event->comment, $event->recordedAt);
+        $this->adjustments[] = new Adjustment(count($this->adjustments) + 1, $event->amount, $event->comment, $event->recordedAt);
     }
 
     /** @throws CurrencyMismatch */

@@ -45,7 +45,7 @@ final class DatabaseEventStoreTest extends TestCase
         $events = [
             new LineCalculated($id, $this->usd('1,000.00'), $this->at(1)),
             new LineRecalculated($id, $this->usd('1,050.00'), $this->at(2)),
-            new LineAdjusted($id, 1, $this->usd('-45.55'), new Comment('Employee declined dental benefit; reversing deduction'), $this->at(3)),
+            new LineAdjusted($id, $this->usd('-45.55'), new Comment('Employee declined dental benefit; reversing deduction'), $this->at(3)),
             new RecalculationIgnored($id, $this->usd('1,200.00'), $this->at(4)),
         ];
 

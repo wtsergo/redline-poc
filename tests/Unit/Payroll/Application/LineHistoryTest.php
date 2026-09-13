@@ -86,7 +86,7 @@ final class LineHistoryTest extends TestCase
     public function it_refuses_a_stream_that_does_not_start_with_a_calculation(): void
     {
         $id = EarningLineId::generate();
-        $orphan = new LineAdjusted($id, 1, $this->usd('-1.00'), new Comment('orphan'), $this->at(1));
+        $orphan = new LineAdjusted($id, $this->usd('-1.00'), new Comment('orphan'), $this->at(1));
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('must start with a calculation');

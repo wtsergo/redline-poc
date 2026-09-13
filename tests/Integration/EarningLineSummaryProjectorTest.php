@@ -62,12 +62,12 @@ final class EarningLineSummaryProjectorTest extends TestCase
             // event, current value, system value, adjustment count, frozen at
             [new LineCalculated($this->id, $this->usd('1,000.00'), $this->at(1)), '$1,000.00', '$1,000.00', 0, null],
             [new LineRecalculated($this->id, $this->usd('1,050.00'), $this->at(2)), '$1,050.00', '$1,050.00', 0, null],
-            [new LineAdjusted($this->id, 1, $this->usd('-45.55'), new Comment('dental'), $this->at(3)), '$1,004.45', '$1,050.00', 1, 3],
+            [new LineAdjusted($this->id, $this->usd('-45.55'), new Comment('dental'), $this->at(3)), '$1,004.45', '$1,050.00', 1, 3],
             [new RecalculationIgnored($this->id, $this->usd('1,200.00'), $this->at(4)), '$1,004.45', '$1,050.00', 1, 3],
-            [new LineAdjusted($this->id, 2, $this->usd('+100.10'), new Comment('overtime'), $this->at(5)), '$1,104.55', '$1,050.00', 2, 3],
-            [new LineAdjusted($this->id, 3, $this->usd('-0.10'), new Comment('rounding'), $this->at(6)), '$1,104.45', '$1,050.00', 3, 3],
-            [new LineAdjusted($this->id, 4, $this->usd('-0.20'), new Comment('rounding'), $this->at(7)), '$1,104.25', '$1,050.00', 4, 3],
-            [new LineAdjusted($this->id, 5, $this->usd('+0.20'), new Comment('fix #4'), $this->at(8)), '$1,104.45', '$1,050.00', 5, 3],
+            [new LineAdjusted($this->id, $this->usd('+100.10'), new Comment('overtime'), $this->at(5)), '$1,104.55', '$1,050.00', 2, 3],
+            [new LineAdjusted($this->id, $this->usd('-0.10'), new Comment('rounding'), $this->at(6)), '$1,104.45', '$1,050.00', 3, 3],
+            [new LineAdjusted($this->id, $this->usd('-0.20'), new Comment('rounding'), $this->at(7)), '$1,104.25', '$1,050.00', 4, 3],
+            [new LineAdjusted($this->id, $this->usd('+0.20'), new Comment('fix #4'), $this->at(8)), '$1,104.45', '$1,050.00', 5, 3],
         ];
 
         foreach ($steps as $index => [$event, $current, $system, $count, $frozenAt]) {
@@ -90,7 +90,7 @@ final class EarningLineSummaryProjectorTest extends TestCase
     public function it_is_idempotent_per_event(): void
     {
         $calculated = new LineCalculated($this->id, $this->usd('1,000.00'), $this->at(1));
-        $adjusted = new LineAdjusted($this->id, 1, $this->usd('-45.55'), new Comment('dental'), $this->at(2));
+        $adjusted = new LineAdjusted($this->id, $this->usd('-45.55'), new Comment('dental'), $this->at(2));
 
         $this->projector->project($calculated, 1);
         $this->projector->project($calculated, 1);
@@ -110,7 +110,7 @@ final class EarningLineSummaryProjectorTest extends TestCase
     {
         $this->expectException(ModelNotFoundException::class);
 
-        $this->projector->project(new LineAdjusted($this->id, 1, $this->usd('-1.00'), new Comment('orphan'), $this->at(1)), 1);
+        $this->projector->project(new LineAdjusted($this->id, $this->usd('-1.00'), new Comment('orphan'), $this->at(1)), 1);
     }
 
     #[Test]

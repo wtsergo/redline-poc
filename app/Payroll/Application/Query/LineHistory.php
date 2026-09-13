@@ -52,7 +52,7 @@ final readonly class LineHistory
                 $event instanceof LineCalculated, $event instanceof LineRecalculated => $systemValue = $event->value,
                 $event instanceof LineAdjusted => [
                     $frozenAtVersion ??= $version,
-                    $adjustments[] = new Adjustment($event->number, $event->amount, $event->comment, $event->recordedAt),
+                    $adjustments[] = new Adjustment(count($adjustments) + 1, $event->amount, $event->comment, $event->recordedAt),
                 ],
                 $event instanceof RecalculationIgnored => $ignored[] = new IgnoredRecalculation($version, $event->attemptedValue, $event->recordedAt),
                 default => throw new LogicException(sprintf('%s cannot fold %s.', self::class, $event::class)),

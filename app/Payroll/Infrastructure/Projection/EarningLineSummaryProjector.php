@@ -64,7 +64,7 @@ final readonly class EarningLineSummaryProjector implements Projector
     private function adjusted(EarningLineSummary $summary, LineAdjusted $event, int $version): void
     {
         $summary->current_value_minor += $event->amount->minorUnits;
-        $summary->adjustment_count = $event->number;
+        $summary->adjustment_count++;
 
         if ($summary->frozen_at_version === null) {
             $summary->frozen_at_version = $version;

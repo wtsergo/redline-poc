@@ -52,7 +52,7 @@ final class EventSerializerTest extends TestCase
         yield 'recalculated' => [new LineRecalculated($id, $usd('1,050.00'), $at), 'line_recalculated'];
         yield 'recalculation ignored' => [new RecalculationIgnored($id, $usd('1,200.00'), $at), 'recalculation_ignored'];
         yield 'adjusted' => [
-            new LineAdjusted($id, 1, $usd('-45.55'), new Comment('Employee declined dental benefit; reversing deduction'), $at),
+            new LineAdjusted($id, $usd('-45.55'), new Comment('Employee declined dental benefit; reversing deduction'), $at),
             'line_adjusted',
         ];
     }
@@ -60,11 +60,11 @@ final class EventSerializerTest extends TestCase
     #[Test]
     public function it_stores_money_as_minor_units_and_a_currency_code_never_as_a_decimal(): void
     {
-        $event = new LineAdjusted($this->id(), 2, Money::fromDecimal('-45.55', Currency::EUR), new Comment('dental'), $this->at());
+        $event = new LineAdjusted($this->id(), Money::fromDecimal('-45.55', Currency::EUR), new Comment('dental'), $this->at());
 
         $row = (new EventSerializer)->toRow($event);
 
-        self::assertSame('{"amount_minor":-4555,"currency":"EUR","number":2,"comment":"dental"}', $row['payload']);
+        self::assertSame('{"amount_minor":-4555,"currency":"EUR","comment":"dental"}', $row['payload']);
     }
 
     #[Test]
@@ -115,8 +115,8 @@ final class EventSerializerTest extends TestCase
         yield 'missing timestamp' => [self::row(['recorded_at' => null]), UnexpectedValueException::class, '"recorded_at" must be a string'];
         yield 'payload is not json' => [self::row(['payload' => '{oops']), JsonException::class, 'Syntax error'];
         yield 'payload is not an object' => [self::row(['payload' => '42']), UnexpectedValueException::class, 'must decode to an object'];
-        yield 'amount is a decimal string' => [self::row(['payload' => '{"amount_minor":"-45.55","currency":"USD","number":1,"comment":"x"}']), UnexpectedValueException::class, '"amount_minor" must be an integer'];
-        yield 'comment missing' => [self::row(['payload' => '{"amount_minor":-4555,"currency":"USD","number":1}']), UnexpectedValueException::class, '"comment" must be a string'];
+        yield 'amount is a decimal string' => [self::row(['payload' => '{"amount_minor":"-45.55","currency":"USD","comment":"x"}']), UnexpectedValueException::class, '"amount_minor" must be an integer'];
+        yield 'comment missing' => [self::row(['payload' => '{"amount_minor":-4555,"currency":"USD"}']), UnexpectedValueException::class, '"comment" must be a string'];
     }
 
     /**
@@ -128,7 +128,7 @@ final class EventSerializerTest extends TestCase
         return array_merge([
             'aggregate_id' => self::LINE_ID,
             'event_type' => 'line_adjusted',
-            'payload' => '{"amount_minor":-4555,"currency":"USD","number":1,"comment":"dental"}',
+            'payload' => '{"amount_minor":-4555,"currency":"USD","comment":"dental"}',
             'recorded_at' => '2026-09-12 09:00:00.000000',
         ], $overrides);
     }

@@ -35,7 +35,6 @@ final readonly class EventSerializer
             $event instanceof RecalculationIgnored => ['recalculation_ignored', self::money($event->attemptedValue)],
             $event instanceof LineAdjusted => ['line_adjusted', [
                 ...self::money($event->amount),
-                'number' => $event->number,
                 'comment' => $event->comment->text,
             ]],
             default => throw new InvalidArgumentException(sprintf('Cannot store %s.', $event::class)),
@@ -72,7 +71,6 @@ final readonly class EventSerializer
             'recalculation_ignored' => new RecalculationIgnored($lineId, self::moneyFrom($payload), $recordedAt),
             'line_adjusted' => new LineAdjusted(
                 $lineId,
-                self::int($payload, 'number'),
                 self::moneyFrom($payload),
                 new Comment(self::string($payload, 'comment')),
                 $recordedAt,
